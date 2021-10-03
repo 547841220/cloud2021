@@ -3,6 +3,7 @@ package com.jijie.springcloud.controller;
 import com.jijie.springcloud.entities.CommentResult;
 import com.jijie.springcloud.entities.Payment;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,6 +38,19 @@ public class OrderController {
     {
         log.info("查询开始,查询id",id);
         return restTemplate.getForObject(PAYMENT_URL+"/payment/get/"+id,CommentResult.class);
+    }
+
+    @GetMapping("payment/getForEntity/{id}")
+    public CommentResult<Payment> getPayment2(@PathVariable("id") Long id)
+    {
+        log.info("查询开始,查询id",id);
+        ResponseEntity<CommentResult> entity = restTemplate.getForEntity(PAYMENT_URL + "/payment/get/" + id, CommentResult.class);
+        if (entity.getStatusCode().is2xxSuccessful()) {
+            log.info(entity.getStatusCode().toString());
+            return entity.getBody();
+        }
+        return new CommentResult<>(444,"操作失败");
+
     }
 
 }
