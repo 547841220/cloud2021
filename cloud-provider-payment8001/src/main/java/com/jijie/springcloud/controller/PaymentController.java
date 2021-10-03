@@ -67,5 +67,12 @@ public class PaymentController {
         return this.discoveryClient;
     }
 
+    //自定义轮询算法
+    @GetMapping(value = "/lb")
+    public String getPaymentLB()
+    {
+        return port;
+    }
+
 
 }

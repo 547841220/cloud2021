@@ -2,12 +2,17 @@ package com.jijie.springcloud.controller;
 
 import com.jijie.springcloud.entities.CommentResult;
 import com.jijie.springcloud.entities.Payment;
+import com.jijie.springcloud.lb.LoadBalance;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.net.URI;
+import java.util.List;
 
 /**
  * <p>Description: </p>
@@ -25,6 +30,13 @@ public class OrderController {
 
     @Resource
     private RestTemplate restTemplate;
+
+    @Resource
+    private DiscoveryClient discoveryClient;
+    @Resource
+    private LoadBalance loadBalance;
+
+
 
     @GetMapping("/payment/create")
     public CommentResult<Payment> create(Payment payment)
@@ -51,6 +63,20 @@ public class OrderController {
         }
         return new CommentResult<>(444,"操作失败");
 
+    }
+
+    @GetMapping(value = "/payment/lb")
+    public String getPaymentLB()
+    {
+        List<ServiceInstance> instances = discoveryClient.getInstances("CLOUD-PAYMENT-SERVICE");
+
+        if(instances == null || instances.size()<=0) {
+            return null;
+        }
+        ServiceInstance serviceInstance = loadBalance.instances(instances);
+        URI uri = serviceInstance.getUri();
+
+        return restTemplate.getForObject(uri+"/payment/lb",String.class);
     }
 
 }
